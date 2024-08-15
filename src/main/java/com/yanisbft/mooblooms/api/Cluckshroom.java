@@ -7,6 +7,8 @@ import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityType;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -46,18 +48,22 @@ public class Cluckshroom extends AbstractMoobloom {
 
 	private Cluckshroom(Cluckshroom.Builder settings) {
 		super(settings);
+		EntityType.Builder<?> builder = EntityType.Builder.create(CluckshroomEntity::new, SpawnGroup.CREATURE)
+				.makeFireImmune()
+				.maxTrackingRange(10)
+				.dimensions(0.4F, 0.7F);
 
-		FabricEntityTypeBuilder.Mob<?> builder = FabricEntityTypeBuilder.createMob()
-				.entityFactory(CluckshroomEntity::new)
-				.spawnGroup(SpawnGroup.CREATURE)
-				.spawnRestriction(SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, (SpawnRestriction.SpawnPredicate<CluckshroomEntity>) settings.spawnPredicate)
-				.dimensions(EntityDimensions.changing(0.4F, 0.7F))
-				.trackRangeChunks(10)
-				.defaultAttributes(CluckshroomEntity::createChickenAttributes);
 
-		if (this.settings.fireImmune) {
-			builder.fireImmune();
-		}
+
+
+//		FabricEntityType.Builder.Mob<?> builder = FabricEntityTypeBuilder.createMob()
+//				.entityFactory(CluckshroomEntity::new)
+//				.spawnGroup(SpawnGroup.CREATURE)
+//				.spawnRestriction(SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, (SpawnRestriction.SpawnPredicate<CluckshroomEntity>) settings.spawnPredicate)
+//				.dimensions(EntityDimensions.changing(0.4F, 0.7F))
+//				.trackRangeChunks(10)
+//				.defaultAttributes(CluckshroomEntity::createChickenAttributes);
+
 
 		this.entityType = (EntityType<CluckshroomEntity>) builder.build();
 
@@ -66,7 +72,7 @@ public class Cluckshroom extends AbstractMoobloom {
 		if (this.settings.primarySpawnEggColor != 0 && this.settings.secondarySpawnEggColor != 0) {
 			this.spawnEgg = new SpawnEggItem(this.entityType, this.settings.primarySpawnEggColor, this.settings.secondarySpawnEggColor, new Item.Settings().maxCount(64));
 			ItemGroupEvents.modifyEntriesEvent(this.settings.spawnEggItemGroup).register((entries) -> entries.add(this.spawnEgg));
-			Identifier itemName = new Identifier(this.settings.name.getNamespace(), this.settings.name.getPath() + "_spawn_egg");
+			Identifier itemName = Identifier.of(this.settings.name.getNamespace(), this.settings.name.getPath() + "_spawn_egg");
 			Registry.register(Registries.ITEM, itemName, this.spawnEgg);
 		}
 
@@ -76,6 +82,7 @@ public class Cluckshroom extends AbstractMoobloom {
 		}
 
 		CLUCKSHROOM_BY_TYPE.putIfAbsent(this.entityType, this);
+		FabricDefaultAttributeRegistry.register(this.entityType, CluckshroomEntity.createChickenAttributes());
 	}
 
 	public EntityType<CluckshroomEntity> getEntityType() {
@@ -89,7 +96,7 @@ public class Cluckshroom extends AbstractMoobloom {
 	public static class Builder extends AbstractMoobloom.Builder {
 		
 		public Builder() {
-			super(EntityType.CHICKEN.getLootTableId());
+			super(EntityType.CHICKEN.getLootTableId().getRegistry());
 		}
 		
 		/**

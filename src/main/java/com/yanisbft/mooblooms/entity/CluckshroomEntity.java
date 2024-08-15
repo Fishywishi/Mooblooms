@@ -33,10 +33,10 @@ public class CluckshroomEntity extends ChickenEntity implements AnimalWithBlockS
 		this.settings = Cluckshroom.CLUCKSHROOM_BY_TYPE.get(entityType);
 	}
 	
-	@Override
-	public Identifier getLootTableId() {
-		return this.settings.getLootTable();
-	}
+//	@Override
+//	public Identifier getLootTableId() {
+//		return this.getLootTable().getValue();
+//	}
 	
 	@Override
 	public ActionResult interactMob(PlayerEntity player, Hand hand) {
@@ -56,9 +56,7 @@ public class CluckshroomEntity extends ChickenEntity implements AnimalWithBlockS
 				for(int i = 0; i < 3; ++i) {
 					this.getWorld().spawnEntity(new ItemEntity(this.getWorld(), this.getX(), this.getY() + this.getHeight(), this.getZ(), new ItemStack(this.settings.getBlockState().getBlock())));
 				}
-				stack.damage(1, player, ((playerEntity) -> {
-					playerEntity.sendToolBreakStatus(hand);
-				}));
+				stack.damage(1, player, getSlotForHand(hand));
 				this.playSound(SoundEvents.ENTITY_MOOSHROOM_SHEAR, 1.0F, 1.0F);
 			}
 			return ActionResult.success(this.getWorld().isClient);

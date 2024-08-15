@@ -2,11 +2,13 @@ package com.yanisbft.mooblooms.api;
 
 import com.yanisbft.mooblooms.config.MoobloomConfigCategory;
 import com.yanisbft.mooblooms.entity.AnimalWithBlockState;
+import com.yanisbft.mooblooms.entity.CluckshroomEntity;
 import com.yanisbft.mooblooms.entity.MoobloomEntity;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -47,26 +49,29 @@ public class Moobloom extends AbstractMoobloom {
 	private Moobloom(Moobloom.Builder settings) {
 		super(settings);
 
-		FabricEntityTypeBuilder.Mob<?> builder = FabricEntityTypeBuilder.createMob()
-				.entityFactory(MoobloomEntity::new)
-				.spawnGroup(settings.spawnGroup)
-				.spawnRestriction(SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, (SpawnRestriction.SpawnPredicate<MoobloomEntity>) settings.spawnPredicate)
-				.dimensions(EntityDimensions.changing(0.9F, 1.4F))
-				.trackRangeChunks(10)
-				.defaultAttributes(MoobloomEntity::createCowAttributes);
+		EntityType.Builder<?> builder = EntityType.Builder.create(MoobloomEntity::new, SpawnGroup.CREATURE)
+				.dimensions(0.9f, 1.4f)
+				.maxTrackingRange(10)
+				.makeFireImmune();
 
-		if (this.settings.fireImmune) {
-			builder.fireImmune();
-		}
+//		FabricEntityTypeBuilder.Mob<?> builder = FabricEntityTypeBuilder.createMob()
+//				.entityFactory(MoobloomEntity::new)
+//				.spawnGroup(settings.spawnGroup)
+//				.spawnRestriction(SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, (SpawnRestriction.SpawnPredicate<MoobloomEntity>) settings.spawnPredicate)
+//				.dimensions(EntityDimensions.changing(0.9F, 1.4F))
+//				.trackRangeChunks(10)
+//				.defaultAttributes(MoobloomEntity::createCowAttributes);
+
 
 		this.entityType = (EntityType<MoobloomEntity>) builder.build();
+
 
 		Registry.register(Registries.ENTITY_TYPE, this.settings.name, this.entityType);
 
 		if (this.settings.primarySpawnEggColor != 0 && this.settings.secondarySpawnEggColor != 0) {
 			this.spawnEgg = new SpawnEggItem(this.entityType, this.settings.primarySpawnEggColor, this.settings.secondarySpawnEggColor, new Item.Settings().maxCount(64));
 			ItemGroupEvents.modifyEntriesEvent(this.settings.spawnEggItemGroup).register((entries) -> entries.add(this.spawnEgg));
-			Identifier itemName = new Identifier(this.settings.name.getNamespace(), this.settings.name.getPath() + "_spawn_egg");
+			Identifier itemName = Identifier.of(this.settings.name.getNamespace(), this.settings.name.getPath() + "_spawn_egg");
 			Registry.register(Registries.ITEM, itemName, this.spawnEgg);
 		}
 
@@ -76,6 +81,7 @@ public class Moobloom extends AbstractMoobloom {
 		}
 
 		MOOBLOOM_BY_TYPE.putIfAbsent(this.entityType, this);
+		FabricDefaultAttributeRegistry.register(this.entityType, MoobloomEntity.createCowAttributes());
 	}
 	
 	public EntityType<MoobloomEntity> getEntityType() {
@@ -89,7 +95,7 @@ public class Moobloom extends AbstractMoobloom {
 	public static class Builder extends AbstractMoobloom.Builder {
 		
 		public Builder() {
-			super(EntityType.COW.getLootTableId());
+			super(EntityType.COW.getLootTableId().getRegistry());
 		}
 		
 		/**
