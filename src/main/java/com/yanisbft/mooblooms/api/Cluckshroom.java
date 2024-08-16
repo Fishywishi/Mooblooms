@@ -53,18 +53,6 @@ public class Cluckshroom extends AbstractMoobloom {
 				.maxTrackingRange(10)
 				.dimensions(0.4F, 0.7F);
 
-
-
-
-//		FabricEntityType.Builder.Mob<?> builder = FabricEntityTypeBuilder.createMob()
-//				.entityFactory(CluckshroomEntity::new)
-//				.spawnGroup(SpawnGroup.CREATURE)
-//				.spawnRestriction(SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, (SpawnRestriction.SpawnPredicate<CluckshroomEntity>) settings.spawnPredicate)
-//				.dimensions(EntityDimensions.changing(0.4F, 0.7F))
-//				.trackRangeChunks(10)
-//				.defaultAttributes(CluckshroomEntity::createChickenAttributes);
-
-
 		this.entityType = (EntityType<CluckshroomEntity>) builder.build();
 
 		Registry.register(Registries.ENTITY_TYPE, this.settings.name, this.entityType);
